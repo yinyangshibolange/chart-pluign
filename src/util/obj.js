@@ -62,12 +62,14 @@ function deepClone(origin) {
 }
 
 // 深assign, 拷贝对象方法,对象数组与null,Date 等引用对象
-function deepAssign(origin, src) {
+ function deepAssign(origin, src, isIncludeArray = false) {
   const clone = deepClone(origin);
-  return deepPierce(clone, src);
+  return deepPierce(clone, src, isIncludeArray);
 }
 
-function deepPierce(origin, src) {
+
+// isPierceArrayObj 表示是否刺穿数组内的引用对象,利用原引用对象,不开辟新对象,测试通过
+function deepPierce(origin, src, isPierceArrayObj = false) {
   if (isObject(origin)) {
     const ori_keys = Object.keys(origin);
     if (isObject(src)) {
@@ -76,8 +78,11 @@ function deepPierce(origin, src) {
       for (let i = 0; i < len; i++) {
         if (ori_keys.indexOf(src_keys[i]) > -1) {
           if (isObject(origin[src_keys[i]])) {
-            deepPierce(origin[src_keys[i]], src[src_keys[i]]);
-          } else {
+            deepPierce(origin[src_keys[i]], src[src_keys[i]], isPierceArrayObj);
+          } else if(isPierceArrayObj && toRawType(origin[src_keys[i]]) === 'Array' && toRawType(src[src_keys[i]]) === 'Array') {
+            deepPierce(origin[src_keys[i]], src[src_keys[i]], isPierceArrayObj);
+          } 
+          else {
             origin[src_keys[i]] = src[src_keys[i]];
           }
         } else {
@@ -87,11 +92,48 @@ function deepPierce(origin, src) {
     } else {
       origin = src;
     }
+  } else if(toRawType(origin) === 'Array' && toRawType(src) === 'Array') {
+      if(isPierceArrayObj) {
+        const originLen = origin.length
+        const srcLen = src.length
+        if(originLen >= srcLen) {
+            origin = origin.map((ele, index) => {
+                if(isObject(src[index])){
+                    if(isObject(ele)) {
+                        return deepPierce(ele, src[index], isPierceArrayObj);
+                    } else {
+                        return src[index]
+                    }
+                } else {
+                    return ele
+                }
+            })
+        } else {
+            origin = origin.map((ele, index) => {
+                const isObjOri = isObject(ele)
+                const isObjSrc = isObject(src[index])
+                if(isObjSrc) {
+                    if(isObjOri) {
+                        return deepPierce(ele, src[index], isPierceArrayObj);
+                    } else {
+                        return src[index]
+                    }
+                } else {
+                    return ele
+                }
+            }).concat(src.slice(originLen))
+        }
+      } else {
+            origin = src;
+        }
   } else {
-    origin = src;
+      origin = src
   }
   return origin;
 }
+
+
+// return;
 
 // 先试试asign方法, 这是对象拷贝方法,
 // 问题很多,
@@ -99,6 +141,9 @@ function objAsign(obj1, obj2) {
   return Object.assign({}, obj1, obj2);
 }
 
+
+
+// test
 // 测试克隆方法, 引用对象地址判断,顺便判断基本数据类型
 function objectTest(origin) {
   const clone = deepClone(origin);
@@ -228,7 +273,7 @@ const obj1 = {
       },
       p: 1,
     },
-    data: [123, 234],
+    data: [123, 234,378],
   },
   a1___1: 123,
 };
@@ -275,7 +320,11 @@ const obj3 = {
 
 //   console.log('obj1', deepClone(obj1))
 //   console.log('obj2', deepClone(obj2))
-objectTest(obj1);
+
+// objectTest(obj1);
+
 //   objectTest(obj2)
 // testStringifyParse(obj2)
 // testStringifyParse(obj3)
+
+console.log(deepAssign(obj1, obj2, true))
