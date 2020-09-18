@@ -17,16 +17,7 @@ function toRawType(value) {
   return _toString.call(value).slice(8, -1);
 }
 
-function repeat(str, count) {
-  if (!count || toRawType(count) !== "Number") return str;
-  let temp = "";
-  let i = 0;
-  while (i < count) {
-    temp += str;
-    i++;
-  }
-  return temp;
-}
+
 //   console.log(toRawType(null))
 
 // 深拷 ,如果是数组咋办,时间咋办,null咋办, 方法Function咋办, 其他引用对象咋办
@@ -80,7 +71,7 @@ function deepPierce(origin, src, isPierceArrayObj = false) {
           if (isObject(origin[src_keys[i]])) {
             deepPierce(origin[src_keys[i]], src[src_keys[i]], isPierceArrayObj);
           } else if(isPierceArrayObj && toRawType(origin[src_keys[i]]) === 'Array' && toRawType(src[src_keys[i]]) === 'Array') {
-            deepPierce(origin[src_keys[i]], src[src_keys[i]], isPierceArrayObj);
+            origin[src_keys[i]] = deepPierce(origin[src_keys[i]], src[src_keys[i]], isPierceArrayObj);
           } 
           else {
             origin[src_keys[i]] = src[src_keys[i]];
@@ -104,6 +95,8 @@ function deepPierce(origin, src, isPierceArrayObj = false) {
                     } else {
                         return src[index]
                     }
+                } else if(src[index] !== undefined && src[index] !== null) {
+                    return src[index]
                 } else {
                     return ele
                 }
@@ -118,11 +111,14 @@ function deepPierce(origin, src, isPierceArrayObj = false) {
                     } else {
                         return src[index]
                     }
+                }  else if(src[index] !== undefined && src[index] !== null) {
+                    return src[index]
                 } else {
                     return ele
                 }
             }).concat(src.slice(originLen))
         }
+        console.log(origin)
       } else {
             origin = src;
         }
@@ -132,199 +128,212 @@ function deepPierce(origin, src, isPierceArrayObj = false) {
   return origin;
 }
 
+export const clone = deepClone
+export const assign = deepAssign
+
 
 // return;
 
-// 先试试asign方法, 这是对象拷贝方法,
-// 问题很多,
-function objAsign(obj1, obj2) {
-  return Object.assign({}, obj1, obj2);
-}
+// // 先试试asign方法, 这是对象拷贝方法,
+// // 问题很多,
+// function objAsign(obj1, obj2) {
+//   return Object.assign({}, obj1, obj2);
+// }
 
 
 
-// test
-// 测试克隆方法, 引用对象地址判断,顺便判断基本数据类型
-function objectTest(origin) {
-  const clone = deepClone(origin);
-  deepTest(origin, clone);
-}
+// // test
+// // 测试克隆方法, 引用对象地址判断,顺便判断基本数据类型
+// function objectTest(origin) {
+//   const clone = deepClone(origin);
+//   deepTest(origin, clone);
+// }
 
-function testStringifyParse(origin) {
-  const clone = JSON.parse(JSON.stringify(origin));
-  deepTest(origin, clone);
-}
+// function testStringifyParse(origin) {
+//   const clone = JSON.parse(JSON.stringify(origin));
+//   deepTest(origin, clone);
+// }
 
-// 测试深克隆
-function deepTest(origin, clone, step = 0) {
-  const _rowTypeOrigin = toRawType(origin);
-  const _rowTypeClone = toRawType(clone);
-  const _isObjectTypeOrigin = isObjectType(origin);
-  const _isObjectTypeClone = isObjectType(clone);
-  if (_isObjectTypeOrigin && _isObjectTypeClone) {
-    if (origin === clone) {
-      console.log(origin, clone, "object: origin = clone, 引用地址没变");
-      return;
-    }
-    if (_rowTypeOrigin === "Array" && _rowTypeClone === "Array") {
-      const len = origin.length;
-      for (let i = 0; i < len; i++) {
-        deepTest(origin[i], clone[i]);
-      }
-      return;
-    } else if (_rowTypeOrigin === "Array" && _rowTypeClone !== "Array") {
-      console.log(
-        origin,
-        clone,
-        "clone Error, origin is Array but clone is not"
-      );
-      return;
-    }
-    if (_rowTypeOrigin === "Object" && _rowTypeClone === "Object") {
-      const originKeys = Object.keys(origin);
-      const cloneKeys = Object.keys(clone);
-      if (originKeys.length !== cloneKeys.length) {
-        console.log(
-          origin,
-          clone,
-          "clone Error, object keys length is not equal"
-        );
-        return;
-      }
-      let count = 0;
-      originKeys.forEach((ele) => {
-        if (cloneKeys.indexOf(ele) > -1) count++;
-      });
-      if (count !== originKeys.length) {
-        console.log(origin, clone, "clone Error, object keys is not equal");
-        return;
-      }
-      originKeys.forEach((originKey) => {
-        console.log(repeat("-", step + 1) + '"' + originKey + '":');
-        deepTest(origin[originKey], clone[originKey], step + 1);
-      });
-      return;
-    } else if (_rowTypeOrigin === "Object" && _rowTypeClone !== "Object") {
-      console.log(
-        origin,
-        clone,
-        "clone Error, origin is Object but clone is not"
-      );
-      return;
-    }
+// function repeat(str, count) {
+//     if (!count || toRawType(count) !== "Number") return str;
+//     let temp = "";
+//     let i = 0;
+//     while (i < count) {
+//       temp += str;
+//       i++;
+//     }
+//     return temp;
+//   }
+// // 测试深克隆
+// function deepTest(origin, clone, step = 0) {
+//   const _rowTypeOrigin = toRawType(origin);
+//   const _rowTypeClone = toRawType(clone);
+//   const _isObjectTypeOrigin = isObjectType(origin);
+//   const _isObjectTypeClone = isObjectType(clone);
+//   if (_isObjectTypeOrigin && _isObjectTypeClone) {
+//     if (origin === clone) {
+//       console.log(origin, clone, "object: origin = clone, 引用地址没变");
+//       return;
+//     }
+//     if (_rowTypeOrigin === "Array" && _rowTypeClone === "Array") {
+//       const len = origin.length;
+//       for (let i = 0; i < len; i++) {
+//         deepTest(origin[i], clone[i]);
+//       }
+//       return;
+//     } else if (_rowTypeOrigin === "Array" && _rowTypeClone !== "Array") {
+//       console.log(
+//         origin,
+//         clone,
+//         "clone Error, origin is Array but clone is not"
+//       );
+//       return;
+//     }
+//     if (_rowTypeOrigin === "Object" && _rowTypeClone === "Object") {
+//       const originKeys = Object.keys(origin);
+//       const cloneKeys = Object.keys(clone);
+//       if (originKeys.length !== cloneKeys.length) {
+//         console.log(
+//           origin,
+//           clone,
+//           "clone Error, object keys length is not equal"
+//         );
+//         return;
+//       }
+//       let count = 0;
+//       originKeys.forEach((ele) => {
+//         if (cloneKeys.indexOf(ele) > -1) count++;
+//       });
+//       if (count !== originKeys.length) {
+//         console.log(origin, clone, "clone Error, object keys is not equal");
+//         return;
+//       }
+//       originKeys.forEach((originKey) => {
+//         console.log(repeat("-", step + 1) + '"' + originKey + '":');
+//         deepTest(origin[originKey], clone[originKey], step + 1);
+//       });
+//       return;
+//     } else if (_rowTypeOrigin === "Object" && _rowTypeClone !== "Object") {
+//       console.log(
+//         origin,
+//         clone,
+//         "clone Error, origin is Object but clone is not"
+//       );
+//       return;
+//     }
 
-    if (_rowTypeOrigin === "Date" && _rowTypeClone === "Date") {
-      if (origin.getTime() !== clone.getTime()) {
-        console.log(
-          origin,
-          clone,
-          "clone Error, time origin and time clone is not equal"
-        );
-      }
-      return;
-    } else if (_rowTypeOrigin === "Date" && _rowTypeClone !== "Date") {
-      console.log(
-        origin,
-        clone,
-        "clone Error, origin is Date but clone is not"
-      );
-      return;
-    }
+//     if (_rowTypeOrigin === "Date" && _rowTypeClone === "Date") {
+//       if (origin.getTime() !== clone.getTime()) {
+//         console.log(
+//           origin,
+//           clone,
+//           "clone Error, time origin and time clone is not equal"
+//         );
+//       }
+//       return;
+//     } else if (_rowTypeOrigin === "Date" && _rowTypeClone !== "Date") {
+//       console.log(
+//         origin,
+//         clone,
+//         "clone Error, origin is Date but clone is not"
+//       );
+//       return;
+//     }
 
-    if (_rowTypeOrigin === "Function" && _rowTypeClone === "Function") {
-      if (origin() !== clone()) {
-        // 就这样判断吧,其实不会到这一步
-        console.log(
-          origin,
-          clone,
-          "clone Error,result from Function origin and  result from Function clone  is not equal"
-        );
-      }
-      return;
-    } else if (_rowTypeOrigin === "Function" && _rowTypeClone !== "Function") {
-      console.log(
-        origin,
-        clone,
-        "clone Error, origin is Function but clone is not"
-      );
-      return;
-    }
-  } else if (_isObjectTypeOrigin && !_isObjectTypeClone) {
-    console.log(
-      origin,
-      clone,
-      "origin is object, but clone is not object, so clone error"
-    );
-  } else {
-    console.log(origin, clone, "base data: origin = clone  ");
-  }
-}
+//     if (_rowTypeOrigin === "Function" && _rowTypeClone === "Function") {
+//       if (origin() !== clone()) {
+//         // 就这样判断吧,其实不会到这一步
+//         console.log(
+//           origin,
+//           clone,
+//           "clone Error,result from Function origin and  result from Function clone  is not equal"
+//         );
+//       }
+//       return;
+//     } else if (_rowTypeOrigin === "Function" && _rowTypeClone !== "Function") {
+//       console.log(
+//         origin,
+//         clone,
+//         "clone Error, origin is Function but clone is not"
+//       );
+//       return;
+//     }
+//   } else if (_isObjectTypeOrigin && !_isObjectTypeClone) {
+//     console.log(
+//       origin,
+//       clone,
+//       "origin is object, but clone is not object, so clone error"
+//     );
+//   } else {
+//     console.log(origin, clone, "base data: origin = clone  ");
+//   }
+// }
 
-const obj1 = {
-  name: {
-    firstname: "123",
-    getName3131() {
-      return this.firstname;
-    },
-    dafaf: {
-      wo: 1,
-      da: {
-        kl: [234],
-      },
-      p: 1,
-    },
-    data: [123, 234,378],
-  },
-  a1___1: 123,
-};
+// const obj1 = {
+//   name: {
+//     firstname: "123",
+//     getName3131() {
+//       return this.firstname;
+//     },
+//     dafaf: {
+//       wo: 1,
+//       da: {
+//         kl: [234],
+//       },
+//       p: 1,
+//     },
+//     data: [123, 234,378],
+//   },
+//   a1___1: 123,
+// };
 
-const obj2 = {
-  name: {
-    firstname: "h",
-    lastname: "y",
-    jhl() {
-      console.log("123");
-    },
-    dafaf: {
-      wo: 7,
-      da: {
-        kl: [123],
-      },
-      p: null,
-    },
-    al: [],
-    data: [32184, 25211],
-  },
-  tpaa: {
-    jakk: 1,
-    fa: {},
-  },
-};
+// const obj2 = {
+//   name: {
+//     firstname: "h",
+//     lastname: "y",
+//     jhl() {
+//       console.log("123");
+//     },
+//     dafaf: {
+//       wo: 7,
+//       da: {
+//         kl: [123],
+//       },
+//       p: null,
+//     },
+//     al: [],
+//     data: [32184, 25211],
+//   },
+//   tpaa: {
+//     jakk: 1,
+//     fa: {},
+//   },
+// };
 
-const obj3 = {
-  a: [123, 234],
-  b: 2,
-  c: {
-    d: 3,
-    e: {
-      f: 4,
-      g: 7,
-      h: [23, 45],
-    },
-  },
-};
+// const obj3 = {
+//   a: [123, 234],
+//   b: 2,
+//   c: {
+//     d: 3,
+//     e: {
+//       f: 4,
+//       g: 7,
+//       h: [23, 45],
+//     },
+//   },
+// };
 
-// 脚本测试, 未出现clone Error字样就说明克隆成功
-//   console.log(objAsign(obj1, obj2))
-//   console.log(deepPierce(obj1, obj2))
+// // 脚本测试, 未出现clone Error字样就说明克隆成功
+// //   console.log(objAsign(obj1, obj2))
+// //   console.log(deepPierce(obj1, obj2))
 
-//   console.log('obj1', deepClone(obj1))
-//   console.log('obj2', deepClone(obj2))
+// //   console.log('obj1', deepClone(obj1))
+// //   console.log('obj2', deepClone(obj2))
 
-// objectTest(obj1);
+// // objectTest(obj1);
 
-//   objectTest(obj2)
-// testStringifyParse(obj2)
-// testStringifyParse(obj3)
+// //   objectTest(obj2)
+// // testStringifyParse(obj2)
+// // testStringifyParse(obj3)
 
-console.log(deepAssign(obj1, obj2, true))
+// console.log(deepAssign(obj1, obj2, true))
