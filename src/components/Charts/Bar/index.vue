@@ -7,11 +7,13 @@
 <script>
 import echarts from 'echarts'
 import bar from 'options/bar'
-import merge from '@/mixin/merge'
-import size from '@/mixin/size'
+import {merge, size, watch} from '@/mixin'
+
+// 图表涉及 数据重绘setOption, 页面宽高resize, 事件监听
 export default {
     data() {
         return {
+            chart: null
         }
     },
     props: {
@@ -19,33 +21,25 @@ export default {
         width: [String, Number],
         height: [String, Number]
     },
-    mixins: [ merge, size ],
+    mixins: [ merge, size, watch ],
     methods: {
         init() {
-           console.log( this.$refs.bar)
-            const chart = echarts.init(this.$refs.bar)
-            // this.$refs.bar.style.width = '500px'
-            // this.$refs.bar.style.height = '500px'
-            // console.log(chart)
-            // console.log(bar)
-
-            // const newOption = {
-            //     title: {
-            //         text: '这是标题?'
-            //     }
-            // }
-            const newOption1 = {
-                series: [{
-                    data: [1, 2, 3, 4, 5, 6, 7]
-                }]
-            }
-            // this.merge(bar, newOption)
-            // console.log(newOption)
-            chart.setOption(this.merge(bar, newOption1))
+            this.chart = echarts.init(this.$refs.bar)
+        },
+        setData() {
+            // const method1 = this.mergeByKey(bar, 'series[0].data', [1,2,3,4,5,6,7])
+            const method2 = this.merge(bar, this.option)
+            this.chart.setOption(method2)
+        }
+    },
+    beforeUnmount() {
+        if(this.chart && !this.chart.isDisposed) {
+            this.chart.dispose()
         }
     },
     mounted() {
         this.init()
+        this.setData()
     }
 }
 </script>

@@ -3,21 +3,31 @@
   <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
   <div class="container">
     <div class="top"></div>
-  <Bar :width="800" :height="500" />
+      <Bar :width="barWidth" :height="barHeight" />
+      <Line :width="800" :height="500" />
   </div>
+
+  <a @click="barWidth = 400; barHeight = 250"></a>
 
     <!-- <Bar /> -->
 </template>
 
 <script>
 // import HelloWorld from './components/HelloWorld.vue'
-import Bar from './components/Charts/Bar'
+import Bar from '@/components/Charts/Bar';
+import Line from '@/components/Charts/Line';
 
 export default {
   name: 'App',
+  data() {
+    return {
+      barWidth: 800,
+      barHeight: 500,
+    }
+  },
   components: {
-    // HelloWorld,
-    Bar
+    Bar,
+    Line,
   }
 }
 </script>

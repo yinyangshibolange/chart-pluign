@@ -17,6 +17,74 @@ function toRawType(value) {
   return _toString.call(value).slice(8, -1);
 }
 
+function repeat(value, count, joinFlag) {
+    const temp = []
+    let i = 0
+    while(i < count) {
+        temp.push(value)
+        i ++
+    }
+    return joinFlag? temp.join(joinFlag): temp
+}
+
+function keyStr2Arr(keyStr) {
+    const arr = keyStr.split('.')
+    const temp = arr.map(ele => {
+        const matchArr = ele.match(/\[\d+\]/g)
+        if(matchArr) {
+            const okey = ele.substr(0, ele.indexOf(matchArr[0]))
+            if(okey) return [okey].concat(matchArr.map(ma => parseInt(ma.slice(1, -1))))
+            return matchArr.map(ma => parseInt(ma.slice(1, -1)))
+        } else {
+            return ele
+        }
+    })
+    return temp.reduce((a, b) => {
+        return a.concat(b)
+    }, [])
+}
+
+// 根据keyarr生成一个引用对象
+function composeObject(keyarr, value, next) {
+    let temp 
+    const key = keyarr[next]
+    if(typeof key === 'number') {
+        if(next === keyarr.length - 1) {
+            temp = [ ...repeat(undefined, key) , value]
+        } else {
+            temp = [...repeat(undefined, key), composeObject( keyarr, value, next + 1)]
+        }
+    } else if(typeof key === 'string') {
+        if(next === keyarr.length - 1) {
+            temp = {
+                [key]: value
+            }
+        } else {
+            temp = {
+                [key]: composeObject( keyarr, value, next + 1)
+            }
+        }
+    }
+    return temp 
+}
+
+// key/vlaue深穿,
+function deepPierceByKey(origin, keystr, value) {
+    const keys = keyStr2Arr(keystr)
+    let temp = origin
+    try {
+        keys.forEach((ele, index) => {
+            if(index === keys.length - 1) {
+                temp[ele] = value
+            } else {
+                temp = temp[ele]
+            }
+        })
+    } catch(err) {
+        throw Error('key path is not correct')
+    }
+    return origin
+}
 
 //   console.log(toRawType(null))
 
@@ -55,7 +123,17 @@ function deepClone(origin) {
 // 深assign, 拷贝对象方法,对象数组与null,Date 等引用对象
  function deepAssign(origin, src, isIncludeArray = false) {
   const clone = deepClone(origin);
-  return deepPierce(clone, src, isIncludeArray);
+  if(toRawType(src) === 'Object') {
+    return deepPierce(clone, src, isIncludeArray);
+  } else if (toRawType(src) === 'Array') {
+      let temp = clone
+    src.forEach(ele => {
+        temp = deepPierce(temp, ele, isIncludeArray)
+    })
+    return temp
+  } else {
+      return origin
+  }
 }
 
 
@@ -130,6 +208,8 @@ function deepPierce(origin, src, isPierceArrayObj = false) {
 
 export const clone = deepClone
 export const assign = deepAssign
+export const compose = composeObject
+export const pierce = deepPierceByKey
 
 
 // return;
