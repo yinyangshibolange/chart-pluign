@@ -10,6 +10,7 @@ export default {
         data: [120, 200, 150, 80, 70, 110, 130],
         type: 'bar',
         showBackground: true,
+        coordinateSystem: 'cartesian2d',
         backgroundStyle: {
             color: 'rgba(220, 220, 220, 0.8)'
         }

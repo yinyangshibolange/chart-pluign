@@ -1,22 +1,22 @@
 export default {
     computed: {
         size() {
-            const widthIsNumber = typeof this.width === 'number'
-            const heightIsNumber = typeof this.height === 'number'
-            const widthIsString = typeof this.width === 'string'
-            const heightIsString = typeof this.height === 'string'
+            const chartWidthIsNumber = typeof this.chartWidth === 'number'
+            const chartHeightIsNumber = typeof this.chartHeight === 'number'
+            const chartWidthIsString = typeof this.chartWidth === 'string'
+            const chartHeightIsString = typeof this.chartHeight === 'string'
             const size = {}
-            if(widthIsNumber) {
-                size.width = this.width + 'px'
+            if(chartWidthIsNumber) {
+                size.chartWidth = this.chartWidth + 'px'
             }
-            if(heightIsNumber) {
-                size.height = this.height + 'px'
+            if(chartHeightIsNumber) {
+                size.chartHeight = this.chartHeight + 'px'
             }
-            if(widthIsString) {
-                size.width = this.width
+            if(chartWidthIsString) {
+                size.chartWidth = this.chartWidth
             }
-            if(heightIsString) {
-                size.height = this.height
+            if(chartHeightIsString) {
+                size.chartHeight = this.chartHeight
             }
             return size
         }
