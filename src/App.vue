@@ -1,23 +1,22 @@
 <template>
   <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
   <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
-  <div class="container">
+  <div
+    class="container"
+    :style="{
+      width: cwidth + 'px',
+      height: cheight + 'px',
+    }"
+  >
     <!-- <div class="top"></div> -->
     <Bar ref="bar1" />
     <!-- <Line :width="800" :height="500" /> -->
-    <div>
-          <textarea v-model="barOption" id="textarea" style="width: 800px; height: 100px;"/>
-    </div>
-
   </div>
+  <CodeEditor />
   <div style="clear: both;"></div>
-    <button @click="runWithOption($refs.bar1, barOption)">插入运行</button>
+  <button @click="runWithOption($refs.bar1, barOption)">插入运行</button>
 
-  <button
-    @click="
-      $refs.bar1.resizeChart(500,300)
-    "
-  >resize</button>
+  <button @click="resizeChart(1000, 800)">resize</button>
 
   <!-- <Bar /> -->
 </template>
@@ -26,60 +25,36 @@
 // import HelloWorld from './components/HelloWorld.vue'
 import Bar from "@/components/Charts/Bar";
 // import Line from '@/components/Charts/Line';
-
-import CodeMirror from "codemirror";
-
-import "codemirror/addon/lint/lint.css";
-import "codemirror/lib/codemirror.css";
-import "codemirror/theme/rubyblue.css";
-import "codemirror/mode/javascript/javascript";
-import "codemirror/addon/lint/lint";
-import "codemirror/addon/lint/json-lint";
-
-require("script-loader!jsonlint");
+import CodeEditor from '@/components/CodeEditor'
+import useCode from '@/components/CodeEditor/useCode'
+import { ref, nextTick } from 'vue';
 
 export default {
-  name: "App",
-  data() {
-    return {
-      codemirror: null,
-      barOption: "",
-    };
-  },
-  components: {
-    Bar,
-    // Line,
-  },
-  methods: {
-    runWithOption(chart, option) {
+  setup() {
+    const code = useCode(null) 
+    const cwidth = ref(800)
+    const cheight = ref(500)
+
+    function resizeChart(width, height) {
+      cwidth.value = width;
+      cheight.value = height;
+      // 重新渲染这一阵完成之后再resize chart
+      nextTick(() => {
+        this.$refs.bar1.resizeChart(0, 0, true);
+      });
+    }
+     function  runWithOption(chart, option) {
       let optionObj;
       try {
         optionObj = JSON.parse(option);
       } catch (err) {
         console.log(err);
       }
-      chart.setData(optionObj)
-    },
-    initCodeEditor() {
-      const textarea = document.getElementById("textarea")
-      this.codemirror = CodeMirror.fromTextArea(textarea, {
-        lineNumbers: true,
-				mode: "application/json",
-				gutters: ["CodeMirror-lint-markers"],
-				// theme: "rubyblue",
-				lint: true,
-
-      })
+      chart.setData(optionObj);
     }
-  },
-  mounted() {
-    this.initCodeEditor()
-    // this.$refs.bar1.setData({
-    //   title: {
-    //     text: "测试regbar1",
-    //   },
-    // });
-  },
+
+    return { Bar, CodeEditor, code, cwidth, cheight, resizeChart, runWithOption }
+  }
 };
 </script>
 

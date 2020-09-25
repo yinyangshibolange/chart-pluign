@@ -53,6 +53,8 @@ function getNodeleftPlace(targetElement) {
 
   const scrollWidth = targetElement.scrollWidth
   const scrollHeight = targetElement.scrollHeight
+
+  console.log('scrollWidth', scrollWidth)
   let contentWidth, contentHeight
 
   if(boxSizing === 'border-box') {
@@ -71,5 +73,6 @@ function getNodeleftPlace(targetElement) {
 
 export default function(targetElemnt) {
     const parentNode = targetElemnt.parentNode
+    console.log(parentNode)
     return getNodeleftPlace(parentNode) 
 }

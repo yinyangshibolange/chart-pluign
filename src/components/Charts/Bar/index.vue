@@ -1,9 +1,9 @@
 <template>
   <div
-    ref="chartdom"
+    id="chart"
     :style="{
-      width: width ? width + 'px' : 0,
-      height: height ? height + 'px' : 0,
+      width: chartWidth ? chartWidth + 'px' : 0,
+      height: chartHeight ? chartHeight + 'px' : 0,
     }"
   ></div>
 </template>
@@ -13,51 +13,48 @@ import echarts from "echarts";
 import bar from "options/bar";
 import { merge } from "@/mixin/merge";
 import calcChartSize from "./calcChartSize";
-import { onMounted,  ref } from "vue";
+import { onMounted, ref , nextTick } from "vue";
 
 // 图表涉及 数据重绘setOption, 页面宽高resize, 事件监听
 export default {
   setup(props) {
-    let chart
+    let chart;
+    let chartdom;
 
-
-    const chartdom = ref(null)
-    let chartWidth = ref(800)
-    let chartHeight = ref(500)
+    let chartWidth = ref(800);
+    let chartHeight = ref(500);
 
     function init(dom) {
-      chart = echarts.init(dom);
+      return echarts.init(dom);
     }
     function getOption() {
       let chartOption;
       chart && (chartOption = chart.getOption());
       return chartOption ? chartOption : merge(bar, props.option);
     }
-    // function setDataByKeyValue(key, data) {
-    //   console.log(key, data);
-    // }
     function setData(option) {
       const method2 = merge(getOption(), option);
       chart.setOption(method2);
     }
-
     function resizeChart(width, height, isResize) {
       const { contentWidth, contentHeight } = calcChartSize(chartdom);
-      // return
       const tempWidth = width ? width : contentWidth;
       const tempHeigth = height ? height : contentHeight;
       console.log(tempWidth, tempHeigth);
-      chartWidth = tempWidth
-      chartHeight = tempHeigth
-      isResize && chart && chart.resize();
+      chartWidth.value = tempWidth;
+      chartHeight.value = tempHeigth;
+      nextTick(() => {
+        isResize && chart && chart.resize();
+      })
     }
     onMounted(() => {
-      init(chartdom);
-      resizeChart();
+      chartdom = document.getElementById("chart");
+      chart = init(chartdom);
       setData(bar);
+      // resizeChart(0, 0, true);
     });
 
-    return { chartdom, chartWidth, chartHeight }
+    return { chartWidth, chartHeight, setData, resizeChart };
   },
   // data() {
   //     return {

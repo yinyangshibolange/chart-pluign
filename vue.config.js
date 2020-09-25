@@ -9,5 +9,6 @@ module.exports = {
         .set('components',resolve('./src/components'))
         .set('assets',resolve('./src/assets'))
         .set('options',resolve('./src/package/options'))
-    }
+    },
+    lintOnSave: false
 }

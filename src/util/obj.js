@@ -196,7 +196,6 @@ function deepPierce(origin, src, isPierceArrayObj = false) {
                 }
             }).concat(src.slice(originLen))
         }
-        console.log(origin)
       } else {
             origin = src;
         }
